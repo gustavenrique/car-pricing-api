@@ -1,0 +1,3 @@
+[ ] Remove the log table from the main database and create its own
+[ ] Create a better and more organized folder structure
+[ ] Create a middleware that generates the startTime and the traceId for every single endpoint
