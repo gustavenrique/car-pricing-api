@@ -17,16 +17,8 @@ export class SQLiteTransport extends TransportStream {
 
         const query = `INSERT INTO log (calling_method, message, trace_id, date, level) VALUES (?, ?, ?, ?, ?)`;
 
-        this.db.run(
-            query,
-            [
-                info.metadata.callingMethod,
-                info.message,
-                info.metadata.traceId,
-                info.metadata.timestamp,
-                info.level,
-            ],
-            (err) => console.error(err)
+        this.db.run(query, [info.metadata.callingMethod, info.message, info.metadata.traceId || '', info.metadata.timestamp, info.level], (err) =>
+            console.error(err)
         );
 
         if (callback) callback();

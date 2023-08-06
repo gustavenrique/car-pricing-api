@@ -1,3 +1,7 @@
-[ ] Remove the log table from the main database and create its own
-[ ] Create a better and more organized folder structure
+[x] Create a better and more organized folder structure
+[x] Wrap all routes responses with the 'response-wrapper.ts' class
+[ ] Wrap all service methods in a common error handler
+[ ] Use a database for logs only
 [ ] Create a middleware that generates the startTime and the traceId for every single endpoint
+[ ] Containerize the API
+[ ] Generate application metrics for monitoring

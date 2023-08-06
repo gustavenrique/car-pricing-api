@@ -1,51 +1,37 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
-import { CreateUserDto } from '../domain/dtos/users/create-user.dto';
+import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Query } from '@nestjs/common';
+import { SwaggerResponse, ResponseWrapper } from 'src/domain/dtos/response-wrapper';
 import { ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { StatusCodes } from 'http-status-codes';
+import { UpdateUserDto } from 'src/domain/dtos/users/update-user.dto';
+import { Serialize } from '../interceptors/SerializeInterceptor';
+import { WinstonLogger } from 'src/logging/winston.logger';
+import { UserDto } from 'src/domain/dtos/users/user.dto';
 import { UsersService } from '../services/users.service';
 import { User } from '../domain/entities/user.entity';
 import { UUID, randomUUID } from 'crypto';
-import { WinstonLogger } from 'src/logging/winston.logger';
-import { Serialize } from '../interceptors/SerializeInterceptor';
-import { UserDto } from 'src/domain/dtos/users/user.dto';
-import { UpdateUserDto } from 'src/domain/dtos/users/update-user.dto';
 
 @Controller('users')
 @ApiTags('users')
 export class UsersController {
-    constructor(private readonly service: UsersService, private readonly logger: WinstonLogger) {}
-
-    @Post('/auth/signup')
-    @ApiResponse({ status: StatusCodes.CREATED, description: 'Successfull response', type: User })
-    @ApiResponse({ status: StatusCodes.BAD_REQUEST, description: 'Invalid Request Body' })
-    async createUser(@Body() body: CreateUserDto): Promise<User> {
-        const startTime: number = performance.now();
-
-        const traceId: UUID = randomUUID();
-
-        this.logger.debug('createUser', `Begin - Email: ${body.email}`, traceId);
-
-        const res = await this.service.create(body.email, body.password);
-
-        this.logger.debug('createUser', `End - Successfull response: ${res != null} - Time: ${performance.now() - startTime}ms`, traceId);
-
-        return res;
-    }
+    constructor(private readonly usersService: UsersService, private readonly logger: WinstonLogger) {}
 
     @Get()
     @Serialize(UserDto)
     @ApiQuery({ name: 'email', type: String, required: false })
-    @ApiResponse({ status: StatusCodes.OK, type: Array<User> })
-    async getAllUsers(@Query('email') email?: string): Promise<User[]> {
+    @SwaggerResponse(UserDto, { status: HttpStatus.OK }, true)
+    async getAllUsers(@Query('email') email?: string) {
         const startTime: number = performance.now();
 
         const traceId: UUID = randomUUID();
 
         this.logger.debug('getAllUsers', `Begin${email ? ` - Email: ${email}` : ''}`, traceId);
 
-        const res = await this.service.getAll(email);
+        const res: ResponseWrapper<User[]> = await this.usersService.getAll(email, traceId);
 
-        this.logger.debug('getAllUsers', `End - Amount of users returned: ${res.length} - Time: ${performance.now() - startTime}ms`, traceId);
+        this.logger.debug(
+            'getAllUsers',
+            `End - Amount of users returned: ${res?.data?.length} - Time: ${(performance.now() - startTime).toFixed(0)}ms`,
+            traceId
+        );
 
         return res;
     }
@@ -53,17 +39,18 @@ export class UsersController {
     @Get('/:id')
     @Serialize(UserDto)
     @ApiParam({ name: 'id', type: Number })
-    @ApiResponse({ status: StatusCodes.OK, type: User })
-    async getUser(@Param('id') id: number): Promise<User> {
+    @ApiResponse({ status: HttpStatus.NO_CONTENT })
+    @SwaggerResponse(UserDto, { status: HttpStatus.OK })
+    async getUser(@Param('id') id: number) {
         const startTime: number = performance.now();
 
         const traceId: UUID = randomUUID();
 
         this.logger.debug('getUser', `Begin - Id: ${id}`, traceId);
 
-        const res: User = await this.service.get(id);
+        const res: ResponseWrapper<User> = await this.usersService.get(id, traceId);
 
-        this.logger.debug('getUser', `End - Response: ${JSON.stringify(res)} - Time: ${performance.now() - startTime}ms`, traceId);
+        this.logger.debug('getUser', `End - Response: ${JSON.stringify(res)} - Time: ${(performance.now() - startTime).toFixed(0)}ms`, traceId);
 
         return res;
     }
@@ -71,7 +58,8 @@ export class UsersController {
     @Patch('/:id')
     @ApiParam({ name: 'id', type: Number })
     @ApiBody({ type: UpdateUserDto })
-    @ApiResponse({ status: StatusCodes.OK, type: Boolean })
+    @Serialize(UserDto)
+    @SwaggerResponse(UserDto, { status: HttpStatus.OK })
     async updateUser(@Param('id') id: number, @Body() body: UpdateUserDto) {
         const startTime: number = performance.now();
 
@@ -79,26 +67,27 @@ export class UsersController {
 
         this.logger.debug('updateUser', `Begin - Id: ${id}`, traceId);
 
-        const res: Boolean = await this.service.update(id, body);
+        const res: ResponseWrapper<User> = await this.usersService.update(id, body, traceId);
 
-        this.logger.debug('updateUser', `End - Response: ${JSON.stringify(res)} - Time: ${performance.now() - startTime}ms`, traceId);
+        this.logger.debug('updateUser', `End - Response: ${JSON.stringify(res)} - Time: ${(performance.now() - startTime).toFixed(0)}ms`, traceId);
 
         return res;
     }
 
     @Delete('/:id')
+    @Serialize()
     @ApiParam({ name: 'id', type: Number })
-    @ApiResponse({ status: StatusCodes.OK, type: Boolean })
-    async removeUser(@Param('id') id: number): Promise<Boolean> {
+    @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Successful response' })
+    async removeUser(@Param('id') id: number) {
         const startTime: number = performance.now();
 
         const traceId: UUID = randomUUID();
 
         this.logger.debug('removeUser', `Begin - Id: ${id}`, traceId);
 
-        const res: Boolean = await this.service.delete(id);
+        const res: ResponseWrapper<Boolean> = await this.usersService.delete(id, traceId);
 
-        this.logger.debug('removeUser', `End - Response: ${JSON.stringify(res)} - Time: ${performance.now() - startTime}ms`, traceId);
+        this.logger.debug('removeUser', `End - Response: ${JSON.stringify(res)} - Time: ${(performance.now() - startTime).toFixed(0)}ms`, traceId);
 
         return res;
     }
