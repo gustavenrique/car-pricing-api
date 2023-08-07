@@ -2,9 +2,17 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './modules/app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { RequestInterceptor } from './controllers/interceptors/request.interceptor';
+const cookienSession = require('cookie-session');
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
+
+    app.use(
+        cookienSession({
+            keys: ['42$#$djwj@r3rSSAe23q'],
+        })
+    );
 
     // swagger
     SwaggerModule.setup(
@@ -22,6 +30,8 @@ async function bootstrap() {
             whitelist: true,
         })
     );
+
+    app.useGlobalInterceptors(new RequestInterceptor());
 
     await app.listen(process.env.PORT || 3000);
 }

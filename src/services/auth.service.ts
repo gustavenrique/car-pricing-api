@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { WinstonLogger } from 'src/logging/winston.logger';
+import { WinstonLogger } from 'src/cross-cutting/logging/winston.logger';
 import { UUID, randomBytes, scrypt as _scrypt } from 'crypto';
 import { User } from 'src/domain/entities/user.entity';
 import { ResponseWrapper } from 'src/domain/dtos/response-wrapper';

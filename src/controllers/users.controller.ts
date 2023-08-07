@@ -1,13 +1,13 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Query, Req, UseInterceptors } from '@nestjs/common';
 import { SwaggerResponse, ResponseWrapper } from 'src/domain/dtos/response-wrapper';
 import { ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UpdateUserDto } from 'src/domain/dtos/users/update-user.dto';
-import { Serialize } from '../interceptors/SerializeInterceptor';
-import { WinstonLogger } from 'src/logging/winston.logger';
+import { Serialize } from './interceptors/serialize.interceptor';
+import { WinstonLogger } from 'src/cross-cutting/logging/winston.logger';
 import { UserDto } from 'src/domain/dtos/users/user.dto';
 import { UsersService } from '../services/users.service';
 import { User } from '../domain/entities/user.entity';
-import { UUID, randomUUID } from 'crypto';
+import { FullRequest } from 'src/controllers/interceptors/request.interceptor';
 
 @Controller('users')
 @ApiTags('users')
@@ -18,19 +18,15 @@ export class UsersController {
     @Serialize(UserDto)
     @ApiQuery({ name: 'email', type: String, required: false })
     @SwaggerResponse(UserDto, { status: HttpStatus.OK }, true)
-    async getAllUsers(@Query('email') email?: string) {
-        const startTime: number = performance.now();
+    async getAllUsers(@Req() req: FullRequest, @Query('email') email?: string) {
+        this.logger.debug('getAllUsers', `Begin${email ? ` - Email: ${email}` : ''}`, req.traceId);
 
-        const traceId: UUID = randomUUID();
-
-        this.logger.debug('getAllUsers', `Begin${email ? ` - Email: ${email}` : ''}`, traceId);
-
-        const res: ResponseWrapper<User[]> = await this.usersService.getAll(email, traceId);
+        const res: ResponseWrapper<User[]> = await this.usersService.getAll(email, req.traceId);
 
         this.logger.debug(
             'getAllUsers',
-            `End - Amount of users returned: ${res?.data?.length} - Time: ${(performance.now() - startTime).toFixed(0)}ms`,
-            traceId
+            `End - Amount of users returned: ${res?.data?.length} - Time: ${(performance.now() - req.startTime).toFixed(0)}ms`,
+            req.traceId
         );
 
         return res;
@@ -40,17 +36,18 @@ export class UsersController {
     @Serialize(UserDto)
     @ApiParam({ name: 'id', type: Number })
     @ApiResponse({ status: HttpStatus.NO_CONTENT })
+    @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR })
     @SwaggerResponse(UserDto, { status: HttpStatus.OK })
-    async getUser(@Param('id') id: number) {
-        const startTime: number = performance.now();
+    async getUser(@Req() req: FullRequest, @Param('id') id: number) {
+        this.logger.debug('getUser', `Begin - Id: ${id}`, req.traceId);
 
-        const traceId: UUID = randomUUID();
+        const res: ResponseWrapper<User> = await this.usersService.get(id, req.traceId);
 
-        this.logger.debug('getUser', `Begin - Id: ${id}`, traceId);
-
-        const res: ResponseWrapper<User> = await this.usersService.get(id, traceId);
-
-        this.logger.debug('getUser', `End - Response: ${JSON.stringify(res)} - Time: ${(performance.now() - startTime).toFixed(0)}ms`, traceId);
+        this.logger.debug(
+            'getUser',
+            `End - Response: ${JSON.stringify(res)} - Time: ${(performance.now() - req.startTime).toFixed(0)}ms`,
+            req.traceId
+        );
 
         return res;
     }
@@ -60,16 +57,16 @@ export class UsersController {
     @ApiBody({ type: UpdateUserDto })
     @Serialize(UserDto)
     @SwaggerResponse(UserDto, { status: HttpStatus.OK })
-    async updateUser(@Param('id') id: number, @Body() body: UpdateUserDto) {
-        const startTime: number = performance.now();
+    async updateUser(@Req() req: FullRequest, @Param('id') id: number, @Body() body: UpdateUserDto) {
+        this.logger.debug('updateUser', `Begin - Id: ${id}`, req.traceId);
 
-        const traceId = randomUUID();
+        const res: ResponseWrapper<User> = await this.usersService.update(id, body, req.traceId);
 
-        this.logger.debug('updateUser', `Begin - Id: ${id}`, traceId);
-
-        const res: ResponseWrapper<User> = await this.usersService.update(id, body, traceId);
-
-        this.logger.debug('updateUser', `End - Response: ${JSON.stringify(res)} - Time: ${(performance.now() - startTime).toFixed(0)}ms`, traceId);
+        this.logger.debug(
+            'updateUser',
+            `End - Response: ${JSON.stringify(res)} - Time: ${(performance.now() - req.startTime).toFixed(0)}ms`,
+            req.traceId
+        );
 
         return res;
     }
@@ -78,16 +75,16 @@ export class UsersController {
     @Serialize()
     @ApiParam({ name: 'id', type: Number })
     @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Successful response' })
-    async removeUser(@Param('id') id: number) {
-        const startTime: number = performance.now();
+    async removeUser(@Req() req: FullRequest, @Param('id') id: number) {
+        this.logger.debug('removeUser', `Begin - Id: ${id}`, req.traceId);
 
-        const traceId: UUID = randomUUID();
+        const res: ResponseWrapper<Boolean> = await this.usersService.delete(id, req.traceId);
 
-        this.logger.debug('removeUser', `Begin - Id: ${id}`, traceId);
-
-        const res: ResponseWrapper<Boolean> = await this.usersService.delete(id, traceId);
-
-        this.logger.debug('removeUser', `End - Response: ${JSON.stringify(res)} - Time: ${(performance.now() - startTime).toFixed(0)}ms`, traceId);
+        this.logger.debug(
+            'removeUser',
+            `End - Response: ${JSON.stringify(res)} - Time: ${(performance.now() - req.startTime).toFixed(0)}ms`,
+            req.traceId
+        );
 
         return res;
     }

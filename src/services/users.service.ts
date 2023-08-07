@@ -2,7 +2,7 @@ import { ConsoleLogger, HttpStatus, Injectable, NotFoundException } from '@nestj
 import { Repository } from 'typeorm';
 import { User } from '../domain/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { WinstonLogger } from 'src/logging/winston.logger';
+import { WinstonLogger } from 'src/cross-cutting/logging/winston.logger';
 import { UUID } from 'crypto';
 import { ResponseWrapper } from 'src/domain/dtos/response-wrapper';
 
@@ -12,6 +12,8 @@ export class UsersService {
 
     async create(email: string, password: string, traceId: UUID): Promise<ResponseWrapper<User>> {
         try {
+            if (!email || !password) return new ResponseWrapper(HttpStatus.BAD_REQUEST, 'Must provide Email and Password');
+
             const user = await this.repo.create({ email, password });
 
             const result: User = await this.repo.save(user);
@@ -40,6 +42,8 @@ export class UsersService {
 
     async get(id: number, traceId: UUID): Promise<ResponseWrapper<User>> {
         try {
+            if (!id) return new ResponseWrapper(HttpStatus.BAD_REQUEST, 'Must provide UserID');
+
             const user = await this.repo.findOneBy({ id });
 
             if (!user) return new ResponseWrapper(HttpStatus.NO_CONTENT, 'User not found');
@@ -54,6 +58,8 @@ export class UsersService {
 
     async update(id: number, props: Partial<User>, traceId: UUID): Promise<ResponseWrapper<User>> {
         try {
+            if (!id) return new ResponseWrapper(HttpStatus.BAD_REQUEST, 'Must provide UserID');
+
             let user = await this.repo.findOne({ where: { id } });
 
             if (!user) return new ResponseWrapper(HttpStatus.NO_CONTENT, 'User not found');
@@ -74,6 +80,8 @@ export class UsersService {
 
     async delete(id: number, traceId: UUID): Promise<ResponseWrapper<Boolean>> {
         try {
+            if (!id) return new ResponseWrapper(HttpStatus.BAD_REQUEST, 'Must provide UserID');
+
             const user = await this.repo.findOneBy({ id });
 
             if (!user) return new ResponseWrapper(HttpStatus.NO_CONTENT, 'User not found');
