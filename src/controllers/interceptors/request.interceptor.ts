@@ -8,8 +8,8 @@ export class RequestInterceptor implements NestInterceptor {
     intercept(context: ExecutionContext, next: CallHandler<any>): Observable<any> {
         const req: FullRequest = context.switchToHttp().getRequest();
 
-        req.traceId = randomUUID();
         req.startTime = performance.now();
+        req.traceId = randomUUID();
 
         return next.handle();
     }

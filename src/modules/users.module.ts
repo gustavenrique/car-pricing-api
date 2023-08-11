@@ -1,16 +1,21 @@
-import { Module } from '@nestjs/common';
+import { CurrentUserInterceptor } from 'src/controllers/interceptors/current-user.interceptor';
+import { WinstonLogger } from 'src/cross-cutting/logging/winston.logger';
 import { UsersController } from '../controllers/users.controller';
 import { AuthController } from '../controllers/auth.controller';
 import { UsersService } from '../services/users.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '../domain/entities/user.entity';
-import { WinstonLogger } from 'src/cross-cutting/logging/winston.logger';
 import { AuthService } from 'src/services/auth.service';
-import { CurrentUserInterceptor } from 'src/controllers/interceptors/current-user.interceptor';
+import { User } from '../domain/entities/user.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Module } from '@nestjs/common';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([User])], // that's what creates the repository automagically
+    imports: [TypeOrmModule.forFeature([User])],
     controllers: [AuthController, UsersController],
-    providers: [UsersService, AuthService, WinstonLogger, CurrentUserInterceptor],
+    providers: [
+        { provide: 'IUsersService', useClass: UsersService },
+        { provide: 'IAuthService', useClass: AuthService },
+        { provide: 'LoggerService', useClass: WinstonLogger },
+        CurrentUserInterceptor,
+    ],
 })
 export class UsersModule {}

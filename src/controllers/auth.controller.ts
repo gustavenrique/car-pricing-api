@@ -1,24 +1,39 @@
-import { Body, Controller, Get, HttpStatus, Post, Req, Session, UseGuards, UseInterceptors } from '@nestjs/common';
-import { ResponseWrapper, SwaggerResponse } from 'src/domain/dtos/response-wrapper';
 import { CurrentUserInterceptor } from 'src/controllers/interceptors/current-user.interceptor';
-import { AuthUserDto } from 'src/domain/dtos/users/auth-user.dto';
+import { SerializeResponse } from 'src/cross-cutting/decorators/serialize-response';
+import { SwaggerResponse } from 'src/cross-cutting/decorators/swagger-response';
 import { FullRequest } from 'src/controllers/interceptors/request.interceptor';
-import { Serialize } from 'src/controllers/interceptors/serialize.interceptor';
-import { WinstonLogger } from 'src/cross-cutting/logging/winston.logger';
+import { IAuthService } from 'src/domain/interfaces/auth.service.interface';
+import { ResponseWrapper } from 'src/domain/dtos/response-wrapper';
+import { AuthUserDto } from 'src/domain/dtos/users/auth-user.dto';
 import { UserDto } from 'src/domain/dtos/users/user.dto';
-import { AuthService } from 'src/services/auth.service';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/domain/entities/user.entity';
 import { AuthGuard } from './guards/auth.guard';
+import {
+    Body,
+    Controller,
+    Get,
+    HttpStatus,
+    Inject,
+    LoggerService,
+    Post,
+    Req,
+    Session,
+    UseGuards,
+    UseInterceptors,
+} from '@nestjs/common';
 
 @ApiTags('auth')
 @Controller('auth')
 @UseInterceptors(CurrentUserInterceptor)
 export class AuthController {
-    constructor(private readonly authService: AuthService, private readonly logger: WinstonLogger) {}
+    constructor(
+        @Inject('IAuthService') private readonly authService: IAuthService,
+        @Inject('LoggerService') private readonly logger: LoggerService
+    ) {}
 
     @Post('/signup')
-    @Serialize(UserDto)
+    @SerializeResponse(UserDto)
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ResponseWrapper })
     @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR, type: ResponseWrapper })
     @SwaggerResponse(UserDto, { status: HttpStatus.CREATED, description: 'Successfull response' })
@@ -39,7 +54,7 @@ export class AuthController {
     }
 
     @Post('/signin')
-    @Serialize(UserDto)
+    @SerializeResponse(UserDto)
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ResponseWrapper })
     @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR, type: ResponseWrapper })
     @SwaggerResponse(UserDto, { status: HttpStatus.OK, description: 'Successfull response' })
@@ -60,7 +75,8 @@ export class AuthController {
     }
 
     @Post('/signout')
-    @Serialize()
+    @SerializeResponse()
+    @UseGuards(AuthGuard)
     @ApiResponse({ status: HttpStatus.NO_CONTENT, schema: { example: new ResponseWrapper(0, '', true) } })
     async signOut(@Req() req: FullRequest, @Session() session: any) {
         this.logger.debug('logout', `Begin`, req.traceId);
@@ -79,7 +95,7 @@ export class AuthController {
     }
 
     @Get('/whoami')
-    @Serialize(UserDto)
+    @SerializeResponse(UserDto)
     @UseGuards(AuthGuard)
     @ApiResponse({ status: HttpStatus.NO_CONTENT })
     @ApiResponse({ status: HttpStatus.FORBIDDEN, type: ResponseWrapper<UserDto> })

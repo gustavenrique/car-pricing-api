@@ -1,20 +1,19 @@
 import { CallHandler, ExecutionContext, HttpStatus, NestInterceptor, Type, UseInterceptors } from '@nestjs/common';
 import { ClassConstructor, plainToClass } from 'class-transformer';
 import { Observable, map } from 'rxjs';
+import { InternalServerError } from 'src/domain/dtos/http-responses';
 import { ResponseWrapper } from 'src/domain/dtos/response-wrapper';
 
-export const Serialize = (dto?: Type) => UseInterceptors(new SerializeInterceptor<typeof dto>(dto));
-
-export class SerializeInterceptor<Type> implements NestInterceptor {
-    constructor(private readonly type: ClassConstructor<Type>) {}
+export class SerializeInterceptor<T> implements NestInterceptor {
+    constructor(private readonly type: ClassConstructor<T>) {}
 
     intercept(context: ExecutionContext, next: CallHandler<any>): Observable<any> {
         return next.handle().pipe(
-            map((response: ResponseWrapper<any>): ResponseWrapper<Type> => {
+            map((response: ResponseWrapper<any>): ResponseWrapper<T> => {
                 try {
                     context.switchToHttp().getResponse().status(response.status);
 
-                    let serializedResponse: ResponseWrapper<Type> = response;
+                    let serializedResponse: ResponseWrapper<T> = response;
 
                     if (this.type)
                         serializedResponse = {
@@ -28,7 +27,7 @@ export class SerializeInterceptor<Type> implements NestInterceptor {
                 } catch (error) {
                     context.switchToHttp().getResponse().status(HttpStatus.INTERNAL_SERVER_ERROR);
 
-                    return new ResponseWrapper(HttpStatus.INTERNAL_SERVER_ERROR, 'An unexpected error occurred');
+                    return InternalServerError('An unexpected error occurred');
                 }
             })
         );

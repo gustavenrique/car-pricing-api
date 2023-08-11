@@ -1,7 +1,7 @@
-[x] Create a better and more organized folder structure
-[x] Wrap all routes responses with the 'response-wrapper.ts' class
-[x] Create a middleware that generates the startTime and the traceId for every single endpoint
+[ ] Use a class/interface mocker in unit tests
+[ ] Use faker.js in unit tests
 [ ] Wrap all service methods in a common error handler
+[ ] Add security packages
 [ ] Use a database for logs only
 [ ] Containerize the API
 [ ] Generate application metrics for monitoring

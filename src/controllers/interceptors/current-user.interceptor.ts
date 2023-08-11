@@ -1,12 +1,12 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import { CallHandler, ExecutionContext, Inject, Injectable, NestInterceptor } from '@nestjs/common';
+import { IUsersService } from 'src/domain/interfaces/users.service.interface';
 import { ResponseWrapper } from 'src/domain/dtos/response-wrapper';
 import { User } from 'src/domain/entities/user.entity';
-import { UsersService } from 'src/services/users.service';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class CurrentUserInterceptor implements NestInterceptor {
-    constructor(private readonly usersService: UsersService) {}
+    constructor(@Inject('IUsersService') private readonly usersService: IUsersService) {}
 
     async intercept(context: ExecutionContext, next: CallHandler<any>): Promise<Observable<any>> {
         const req = context.switchToHttp().getRequest();

@@ -1,21 +1,24 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Query, Req, UseInterceptors } from '@nestjs/common';
-import { SwaggerResponse, ResponseWrapper } from 'src/domain/dtos/response-wrapper';
+import { Body, Controller, Delete, Get, HttpStatus, Inject, LoggerService, Param, Patch, Query, Req } from '@nestjs/common';
 import { ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { UpdateUserDto } from 'src/domain/dtos/users/update-user.dto';
-import { Serialize } from './interceptors/serialize.interceptor';
-import { WinstonLogger } from 'src/cross-cutting/logging/winston.logger';
-import { UserDto } from 'src/domain/dtos/users/user.dto';
-import { UsersService } from '../services/users.service';
-import { User } from '../domain/entities/user.entity';
+import { SerializeResponse } from 'src/cross-cutting/decorators/serialize-response';
+import { SwaggerResponse } from 'src/cross-cutting/decorators/swagger-response';
 import { FullRequest } from 'src/controllers/interceptors/request.interceptor';
+import { IUsersService } from 'src/domain/interfaces/users.service.interface';
+import { UpdateUserDto } from 'src/domain/dtos/users/update-user.dto';
+import { ResponseWrapper } from 'src/domain/dtos/response-wrapper';
+import { UserDto } from 'src/domain/dtos/users/user.dto';
+import { User } from '../domain/entities/user.entity';
 
 @Controller('users')
 @ApiTags('users')
 export class UsersController {
-    constructor(private readonly usersService: UsersService, private readonly logger: WinstonLogger) {}
+    constructor(
+        @Inject('IUsersService') private readonly usersService: IUsersService,
+        @Inject('LoggerService') private readonly logger: LoggerService
+    ) {}
 
     @Get()
-    @Serialize(UserDto)
+    @SerializeResponse(UserDto)
     @ApiQuery({ name: 'email', type: String, required: false })
     @SwaggerResponse(UserDto, { status: HttpStatus.OK }, true)
     async getAllUsers(@Req() req: FullRequest, @Query('email') email?: string) {
@@ -33,7 +36,7 @@ export class UsersController {
     }
 
     @Get('/:id')
-    @Serialize(UserDto)
+    @SerializeResponse(UserDto)
     @ApiParam({ name: 'id', type: Number })
     @ApiResponse({ status: HttpStatus.NO_CONTENT })
     @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR })
@@ -55,7 +58,7 @@ export class UsersController {
     @Patch('/:id')
     @ApiParam({ name: 'id', type: Number })
     @ApiBody({ type: UpdateUserDto })
-    @Serialize(UserDto)
+    @SerializeResponse(UserDto)
     @SwaggerResponse(UserDto, { status: HttpStatus.OK })
     async updateUser(@Req() req: FullRequest, @Param('id') id: number, @Body() body: UpdateUserDto) {
         this.logger.debug('updateUser', `Begin - Id: ${id}`, req.traceId);
@@ -72,7 +75,7 @@ export class UsersController {
     }
 
     @Delete('/:id')
-    @Serialize()
+    @SerializeResponse()
     @ApiParam({ name: 'id', type: Number })
     @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Successful response' })
     async removeUser(@Req() req: FullRequest, @Param('id') id: number) {

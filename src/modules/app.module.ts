@@ -4,7 +4,6 @@ import { UsersModule } from './users.module';
 import { ReportsModule } from './reports.module';
 import { User } from '../domain/entities/user.entity';
 import { Report } from '../domain/entities/report.entity';
-import { WinstonLogger } from '../cross-cutting/logging/winston.logger';
 import { Log } from '../domain/entities/log.entity';
 
 @Module({
@@ -18,6 +17,6 @@ import { Log } from '../domain/entities/log.entity';
         UsersModule,
         ReportsModule,
     ],
-    providers: [WinstonLogger],
+    providers: [],
 })
 export class AppModule {}
