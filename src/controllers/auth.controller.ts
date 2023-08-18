@@ -22,6 +22,7 @@ import {
     UseGuards,
     UseInterceptors,
 } from '@nestjs/common';
+import { CookieSession } from 'src/domain/dtos/cookie-session';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -37,7 +38,7 @@ export class AuthController {
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ResponseWrapper })
     @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR, type: ResponseWrapper })
     @SwaggerResponse(UserDto, { status: HttpStatus.CREATED, description: 'Successfull response' })
-    async signup(@Req() req: FullRequest, @Body() body: AuthUserDto, @Session() session: any) {
+    async signup(@Req() req: FullRequest, @Body() body: AuthUserDto, @Session() session: CookieSession) {
         this.logger.debug('signup', `Begin - Email: ${body.email}`, req.traceId);
 
         const res: ResponseWrapper<User> = await this.authService.signup(body.email, body.password, req.traceId);
@@ -58,7 +59,7 @@ export class AuthController {
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ResponseWrapper })
     @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR, type: ResponseWrapper })
     @SwaggerResponse(UserDto, { status: HttpStatus.OK, description: 'Successfull response' })
-    async signin(@Req() req: FullRequest, @Body() body: AuthUserDto, @Session() session: any) {
+    async signin(@Req() req: FullRequest, @Body() body: AuthUserDto, @Session() session: CookieSession) {
         this.logger.debug('signin', `Begin - Email: ${body.email}`, req.traceId);
 
         const res: ResponseWrapper<User> = await this.authService.signin(body.email, body.password, req.traceId);
@@ -78,7 +79,7 @@ export class AuthController {
     @SerializeResponse()
     @UseGuards(AuthGuard)
     @ApiResponse({ status: HttpStatus.NO_CONTENT, schema: { example: new ResponseWrapper(0, '', true) } })
-    async signOut(@Req() req: FullRequest, @Session() session: any) {
+    async signOut(@Req() req: FullRequest, @Session() session: CookieSession) {
         this.logger.debug('logout', `Begin`, req.traceId);
 
         session.userId = null;

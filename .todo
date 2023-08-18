@@ -1,7 +1,8 @@
 [ ] Use a class/interface mocker in unit tests
 [ ] Use faker.js in unit tests
 [ ] Wrap all service methods in a common error handler
-[ ] Add security packages
 [ ] Use a database for logs only
+[ ] Add security packages
 [ ] Containerize the API
+[ ] Setup SonarQube
 [ ] Generate application metrics for monitoring

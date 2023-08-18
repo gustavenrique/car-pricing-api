@@ -1,37 +1,26 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './modules/app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { RequestInterceptor } from './controllers/interceptors/request.interceptor';
-const cookienSession = require('cookie-session');
+import { AppModule } from './modules/app.module';
+import swaggerCss from '../public/swagger.css';
+import { NestFactory } from '@nestjs/core';
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
-
-    app.use(
-        cookienSession({
-            keys: ['42$#$djwj@r3rSSAe23q'],
-        })
-    );
+    const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
     // swagger
-    SwaggerModule.setup(
-        'docs', // endpoint
+    const swaggerDocument = SwaggerModule.createDocument(
         app,
-        SwaggerModule.createDocument(
-            app,
-            new DocumentBuilder().setTitle('Car Pricing API').setDescription('A RESTful API for Car Pricing').setVersion('1.0').build()
-        )
+        new DocumentBuilder()
+            .setTitle('Car Pricing API')
+            .setDescription('A RESTful API for Car Pricing')
+            .setVersion('1.0')
+            .build()
     );
 
-    // pipes
-    app.useGlobalPipes(
-        new ValidationPipe({
-            whitelist: true,
-        })
-    );
-
-    app.useGlobalInterceptors(new RequestInterceptor());
+    SwaggerModule.setup('docs', app, swaggerDocument, {
+        customSiteTitle: 'Car Pricing API',
+        customCss: swaggerCss,
+    });
 
     await app.listen(process.env.PORT || 3000);
 }

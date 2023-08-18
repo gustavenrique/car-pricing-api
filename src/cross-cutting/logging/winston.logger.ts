@@ -2,15 +2,18 @@ import { Injectable, LoggerService } from '@nestjs/common';
 import { Logger, createLogger, format, transports } from 'winston';
 import { SQLiteTransport } from './sqlite.transport';
 import { UUID } from 'crypto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class WinstonLogger implements LoggerService {
     private readonly logger: Logger;
 
-    constructor() {
+    constructor(config: ConfigService) {
+        const database = config.get<string>('DB_NAME');
+
         this.logger = createLogger({
             transports: [
-                new SQLiteTransport({
+                new SQLiteTransport(database, {
                     level: 'debug', // minimum LogLevel
                     format: format.combine(format.timestamp(), format.json(), format.metadata()),
                 }),
