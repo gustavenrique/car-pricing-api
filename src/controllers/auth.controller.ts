@@ -1,32 +1,18 @@
-import { CurrentUserInterceptor } from 'src/controllers/interceptors/current-user.interceptor';
-import { SerializeResponse } from 'src/cross-cutting/decorators/serialize-response';
-import { SwaggerResponse } from 'src/cross-cutting/decorators/swagger-response';
-import { FullRequest } from 'src/controllers/interceptors/request.interceptor';
-import { IAuthService } from 'src/domain/interfaces/auth.service.interface';
+import { Body, Controller, Get, HttpStatus, Inject, LoggerService, Post, Req, Session, UseGuards } from '@nestjs/common';
+import { SerializeResponse } from 'src/controllers/decorators/serialize-response';
+import { SwaggerResponse } from 'src/controllers/decorators/swagger-response';
+import { IAuthService } from 'src/services/interfaces/auth.service.interface';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ResponseWrapper } from 'src/domain/dtos/response-wrapper';
 import { AuthUserDto } from 'src/domain/dtos/users/auth-user.dto';
+import { CookieSession } from 'src/domain/dtos/cookie-session';
+import { FullRequest } from 'src/domain/dtos/full-request';
 import { UserDto } from 'src/domain/dtos/users/user.dto';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/domain/entities/user.entity';
 import { AuthGuard } from './guards/auth.guard';
-import {
-    Body,
-    Controller,
-    Get,
-    HttpStatus,
-    Inject,
-    LoggerService,
-    Post,
-    Req,
-    Session,
-    UseGuards,
-    UseInterceptors,
-} from '@nestjs/common';
-import { CookieSession } from 'src/domain/dtos/cookie-session';
 
 @ApiTags('auth')
 @Controller('auth')
-@UseInterceptors(CurrentUserInterceptor)
 export class AuthController {
     constructor(
         @Inject('IAuthService') private readonly authService: IAuthService,
@@ -76,9 +62,9 @@ export class AuthController {
     }
 
     @Post('/signout')
-    @SerializeResponse()
     @UseGuards(AuthGuard)
-    @ApiResponse({ status: HttpStatus.NO_CONTENT, schema: { example: new ResponseWrapper(0, '', true) } })
+    @ApiBearerAuth()
+    @ApiResponse({ status: HttpStatus.NO_CONTENT })
     async signOut(@Req() req: FullRequest, @Session() session: CookieSession) {
         this.logger.debug('logout', `Begin`, req.traceId);
 
@@ -98,16 +84,13 @@ export class AuthController {
     @Get('/whoami')
     @SerializeResponse(UserDto)
     @UseGuards(AuthGuard)
-    @ApiResponse({ status: HttpStatus.NO_CONTENT })
-    @ApiResponse({ status: HttpStatus.FORBIDDEN, type: ResponseWrapper<UserDto> })
-    @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR, type: ResponseWrapper<UserDto> })
+    @ApiBearerAuth()
+    @ApiResponse({ status: HttpStatus.UNAUTHORIZED, type: ResponseWrapper })
     @SwaggerResponse(UserDto, { status: HttpStatus.OK })
     async whoAmI(@Req() req: FullRequest) {
         this.logger.debug('whoAmI', `Begin`, req.traceId);
 
-        const res: ResponseWrapper<User> = req.currentUser
-            ? new ResponseWrapper(HttpStatus.OK, 'User returned successfully', req.currentUser)
-            : new ResponseWrapper(HttpStatus.FORBIDDEN, 'Not logged in');
+        const res: ResponseWrapper<User> = new ResponseWrapper(HttpStatus.OK, 'User returned successfully', req.currentUser);
 
         this.logger.debug(
             'whoAmI',

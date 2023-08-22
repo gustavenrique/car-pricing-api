@@ -1,8 +1,11 @@
 import { rm } from 'fs/promises';
 import { join } from 'path';
 
-global.beforeEach(async () => {
+const deleteDatabase = async () => {
     try {
         await rm(join(__dirname, '..', '..', 'test.sqlite'));
     } catch (error) {}
-});
+};
+
+global.beforeEach(deleteDatabase);
+global.afterAll(deleteDatabase);

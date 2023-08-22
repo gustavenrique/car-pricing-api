@@ -1,16 +1,32 @@
-import { Body, Controller, Delete, Get, HttpStatus, Inject, LoggerService, Param, Patch, Query, Req } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { SerializeResponse } from 'src/cross-cutting/decorators/serialize-response';
-import { SwaggerResponse } from 'src/cross-cutting/decorators/swagger-response';
-import { FullRequest } from 'src/controllers/interceptors/request.interceptor';
-import { IUsersService } from 'src/domain/interfaces/users.service.interface';
+import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { SerializeResponse } from 'src/controllers/decorators/serialize-response';
+import { SwaggerResponse } from 'src/controllers/decorators/swagger-response';
+import { IUsersService } from 'src/services/interfaces/users.service.interface';
 import { UpdateUserDto } from 'src/domain/dtos/users/update-user.dto';
 import { ResponseWrapper } from 'src/domain/dtos/response-wrapper';
 import { UserDto } from 'src/domain/dtos/users/user.dto';
 import { User } from '../domain/entities/user.entity';
+import { AuthGuard } from './guards/auth.guard';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpStatus,
+    Inject,
+    LoggerService,
+    Param,
+    Patch,
+    Query,
+    Req,
+    UseGuards,
+} from '@nestjs/common';
+import { FullRequest } from 'src/domain/dtos/full-request';
 
 @Controller('users')
 @ApiTags('users')
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 export class UsersController {
     constructor(
         @Inject('IUsersService') private readonly usersService: IUsersService,

@@ -1,12 +1,12 @@
-import { HttpStatus, LoggerService } from '@nestjs/common';
-import { UUID, randomUUID } from 'crypto';
-import { AuthController } from 'src/controllers/auth.controller';
-import { FullRequest } from 'src/controllers/interceptors/request.interceptor';
-import { CookieSession } from 'src/domain/dtos/cookie-session';
+import { IAuthService } from 'src/services/interfaces/auth.service.interface';
 import { ResponseWrapper } from 'src/domain/dtos/response-wrapper';
 import { AuthUserDto } from 'src/domain/dtos/users/auth-user.dto';
+import { AuthController } from 'src/controllers/auth.controller';
+import { CookieSession } from 'src/domain/dtos/cookie-session';
+import { FullRequest } from 'src/domain/dtos/full-request';
+import { HttpStatus, LoggerService } from '@nestjs/common';
 import { User } from 'src/domain/entities/user.entity';
-import { IAuthService } from 'src/domain/interfaces/auth.service.interface';
+import { UUID, randomUUID } from 'crypto';
 
 describe('AuthController', () => {
     const authServiceFake: Partial<IAuthService> = {};

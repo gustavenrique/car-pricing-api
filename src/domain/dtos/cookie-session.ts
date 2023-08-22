@@ -1,3 +1,3 @@
 export interface CookieSession {
-    userId: number;
+    userId?: number;
 }

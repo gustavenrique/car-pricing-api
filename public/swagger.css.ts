@@ -47,4 +47,12 @@ html,
     padding: 5px;
 }
 
+textarea, input { color: #3b4151 !important; }
+
+.swagger-ui .authorization__btn.unlocked {
+    background-color: white;
+    padding: 3px;
+    margin-left: 10px;
+    border-radius: 50px;
+}
 `;

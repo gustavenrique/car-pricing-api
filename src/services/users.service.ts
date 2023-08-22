@@ -1,5 +1,5 @@
 import { BadRequest, Created, InternalServerError, NoContent, Ok } from 'src/domain/dtos/http-responses';
-import { IUsersService } from 'src/domain/interfaces/users.service.interface';
+import { IUsersService } from 'src/services/interfaces/users.service.interface';
 import { ResponseWrapper } from 'src/domain/dtos/response-wrapper';
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { User } from '../domain/entities/user.entity';
@@ -18,7 +18,7 @@ export class UsersService implements IUsersService {
         try {
             if (!email || !password) return BadRequest('Must provide Email and Password');
 
-            const user = await this.repo.create({ email, password });
+            const user = await this.repo.create({ email, password, active: true, admin: true });
 
             const result: User = await this.repo.save(user);
 

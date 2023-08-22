@@ -4,8 +4,8 @@ import { UUID, randomBytes, scrypt as _scrypt } from 'crypto';
 import { User } from 'src/domain/entities/user.entity';
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { promisify } from 'util';
-import { IUsersService } from 'src/domain/interfaces/users.service.interface';
-import { IAuthService } from 'src/domain/interfaces/auth.service.interface';
+import { IUsersService } from 'src/services/interfaces/users.service.interface';
+import { IAuthService } from 'src/services/interfaces/auth.service.interface';
 
 const scrypt = promisify(_scrypt);
 

@@ -1,5 +1,5 @@
-import { IUsersService } from 'src/domain/interfaces/users.service.interface';
-import { IAuthService } from 'src/domain/interfaces/auth.service.interface';
+import { IUsersService } from 'src/services/interfaces/users.service.interface';
+import { IAuthService } from 'src/services/interfaces/auth.service.interface';
 import { ResponseWrapper } from 'src/domain/dtos/response-wrapper';
 import { HttpStatus, LoggerService } from '@nestjs/common';
 import { AuthService } from 'src/services/auth.service';

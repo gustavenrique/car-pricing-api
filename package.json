@@ -14,7 +14,10 @@
     "start:prod": "node dist/main",
     "test": "cross-env NODE_ENV=test jest --verbose",
     "test:debug": "cross-env NODE_ENV=test node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "cross-env NODE_ENV=test jest --config ./test/e2e/jest.e2e.config.ts"
+    "test:e2e": "cross-env NODE_ENV=test jest --config ./test/e2e/jest.e2e.config.ts",
+    "typeorm": "cross-env NODE_ENV=dev node --require ts-node/register ./node_modules/typeorm/cli.js",
+    "typeorm:generate": "yarn typeorm migration:generate ./migrations/migration -d ./orm.config.ts --outputJs",
+    "typeorm:run": "yarn typeorm migration:run -d ./orm.config.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -28,6 +31,7 @@
     "class-validator": "^0.14.0",
     "cookie-session": "^2.0.0",
     "cross-env": "^7.0.3",
+    "pg": "^8.11.3",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "sqlite3": "^5.1.6",

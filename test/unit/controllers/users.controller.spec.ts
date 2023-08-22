@@ -1,9 +1,9 @@
-import { FullRequest } from 'src/controllers/interceptors/request.interceptor';
-import { IUsersService } from 'src/domain/interfaces/users.service.interface';
+import { IUsersService } from 'src/services/interfaces/users.service.interface';
 import { UpdateUserDto } from 'src/domain/dtos/users/update-user.dto';
 import { UsersController } from 'src/controllers/users.controller';
 import { ResponseWrapper } from 'src/domain/dtos/response-wrapper';
 import { HttpStatus, LoggerService } from '@nestjs/common';
+import { FullRequest } from 'src/domain/dtos/full-request';
 import { User } from 'src/domain/entities/user.entity';
 import { UUID, randomUUID } from 'crypto';
 

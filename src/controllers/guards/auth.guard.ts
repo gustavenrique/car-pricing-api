@@ -1,6 +1,6 @@
-import { CanActivate, ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
-import { FullRequest } from '../interceptors/request.interceptor';
-import { ResponseWrapper } from 'src/domain/dtos/response-wrapper';
+import { CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { FullRequest } from 'src/domain/dtos/full-request';
+import { Unauthorized } from 'src/domain/dtos/http-responses';
 
 export class AuthGuard implements CanActivate {
     canActivate(context: ExecutionContext): boolean {
@@ -8,8 +8,7 @@ export class AuthGuard implements CanActivate {
 
         const isLoggedIn = req.session.userId > 0;
 
-        if (!isLoggedIn)
-            throw new HttpException(new ResponseWrapper(HttpStatus.FORBIDDEN, 'Must be logged in to access this resource'), HttpStatus.FORBIDDEN);
+        if (!isLoggedIn) throw new UnauthorizedException(Unauthorized('Must be logged in to access this resource'));
 
         return isLoggedIn;
     }

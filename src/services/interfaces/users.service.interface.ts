@@ -1,5 +1,5 @@
-import { User } from '../entities/user.entity';
-import { ResponseWrapper } from '../dtos/response-wrapper';
+import { User } from '../../domain/entities/user.entity';
+import { ResponseWrapper } from '../../domain/dtos/response-wrapper';
 import { UUID } from 'crypto';
 
 export interface IUsersService {

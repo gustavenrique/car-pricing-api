@@ -17,9 +17,7 @@ describe('Authentication', () => {
         app = moduleFixture.createNestApplication();
 
         await app.init();
-    });
-
-    afterAll(async () => await app.close());
+    }, 30000);
 
     it('signup', async () => {
         const emailReq = 'test@user.com';
